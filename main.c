@@ -2,7 +2,20 @@
 #include<stdlib.h>
 #include<string.h>
 #include<ctype.h>
-int hash(int size, int base, char *s)
+typedef struct rec* Rec;
+struct rec {
+	int index;
+	int count;
+	Rec next;
+};
+
+struct hash {
+	Rec* arr;
+	int elementcount;
+	int insertioncost;
+};
+typedef struct hash* Hash;
+int hash(char *s, int size, int base)
 {
 	int max = strlen(s);
 	int sum = 0;
@@ -12,6 +25,7 @@ int hash(int size, int base, char *s)
 		sum+=j;
 	}
 	int value = (((sum)%base)%size);
+	return value;
 }
 
 char** parse(FILE *fp)
@@ -44,12 +58,71 @@ char** parse(FILE *fp)
 	}
 	return book;
 }
+Hash create(int tsize) {
+	Hash h = (Hash)malloc(sizeof(struct hash));
+	h->elementcount=0;
+	h->insertioncost=0;
+	h->arr = (Rec*)malloc(sizeof(Rec)*tsize);
+	return h;
+}
 
+Hash insert(Hash h,char** s,int index) {
+	int count=1;
+	int ind = hash(s[index],10,10);
+	Rec temp = (h->arr)[ind];
+	Rec record = (Rec)malloc(sizeof(struct rec));
+	record->next=NULL;
+	record->index=index;
+	record->count=1;
+	if(temp==NULL) {
+		(h->arr)[ind]=record;
+		h->elementcount+=1;
+		return h;
+	}
+	while(temp->next!=NULL) {
+		if(strcmp(s[index],s[temp->index])==0) {
+			temp->count+=1;
+			free(record);
+			return h;
+		}
+		temp=temp->next;
+		count++;
+	}
+	if(strcmp(s[index],s[temp->index])==0) {
+		temp->count+=1;
+		free(record);
+		return h;
+	}
+	h->insertioncost+=count;
+	h->elementcount+=1;
+	temp->next=record;
+	return h;
+}
+int insertAll(Hash h, char** s) {
+	for(int i=0;s[i]!=NULL;i++) {
+		h = insert(h,s,i);
+	}
+	return h->insertioncost;
+}
+/*void print(Hash h, int size)
+{
+    for(int i=0; i<size; i++)
+    {
+        Rec temp = h->arr[i];
+        while(temp->next!=NULL)
+        {
+            printf(temp->index);
+        }
+    }
+}*/
 int main()
 {
     FILE* fp;
     fp = fopen("kyc.txt", "r");
     char** apple = parse(fp);
+    Hash lite = create(10);
+    int i = insertAll(lite, apple);
+    //print(lite, 10);
     printf("Hello world!\n");
     return 0;
 }
