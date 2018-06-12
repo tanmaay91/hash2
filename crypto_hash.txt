@@ -1,0 +1,3 @@
+the program basically uses a cryptographic hash 
+function to hash a sentence input by the user or any other word.
+this is a text hash. file handling has been dealt with separately.
